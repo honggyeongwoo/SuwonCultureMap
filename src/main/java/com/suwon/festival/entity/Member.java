@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,6 +36,11 @@ public class Member {
 
     @Column(unique = true, nullable = false)
     private String nickname; // 닉네임
+
+    @Builder
+    public Member(String nickname) {
+        this.nickname = nickname;
+    }
 
     @CreatedDate // 저장될때 자동으로 시간 기입
     @Column(nullable = false) // 공란 금지
