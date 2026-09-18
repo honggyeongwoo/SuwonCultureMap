@@ -2,34 +2,42 @@ package com.suwon.festival.entity;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 /*
- 회원정보
-    닉네임
-    가입일
+회원번호 id
+닉네임 nickname
+가입일 createdAt
 */
-@Entity // Table 기초
-@Table (name ="member")
-@Getter // private 꺼내쓸거니까 달아주기 ?
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // 자동 생성자 틀, 외부에서 함부로 빈 객체를 못 만들게 설정
+
+@Entity
+@Table(name = "member")
+@Getter
+@EntityListeners(AuditingEntityListener.class) // ??
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY) // 자동생성
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 회원번호
 
-    // 중복 x
-    @Column (unique = true, nullable = false) // 중복 x, null x
+    @Column(unique = true, nullable = false)
     private String nickname; // 닉네임
-    
-    private LocalDateTime createdAt; // 가입일
+
+    @CreatedDate // 저장될때 자동으로 시간 기입
+    @Column(nullable = false) // 공란 금지
+    private LocalDateTime createdAt;
+
 }
