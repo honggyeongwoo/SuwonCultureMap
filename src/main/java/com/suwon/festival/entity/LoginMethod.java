@@ -1,5 +1,6 @@
 package com.suwon.festival.entity;
 
+<<<<<<< HEAD
 // [수정] import java.security.Provider; → 삭제
 // java.security.Provider는 JDK 보안 API 클래스(추상 클래스)이고 enum이 아니라서
 // 아래 @Enumerated(EnumType.STRING) 자체가 컴파일 에러가 남
@@ -13,11 +14,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+=======
+import org.hibernate.annotations.ManyToAny;
+
+>>>>>>> fd340a84aadc986b9e805b5020d4346ae5ed2aa1
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+<<<<<<< HEAD
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -25,6 +31,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+=======
+>>>>>>> fd340a84aadc986b9e805b5020d4346ae5ed2aa1
 
 // id
 // provider
@@ -32,6 +40,7 @@ import lombok.NoArgsConstructor;
 // email
 // password
 // member_id
+<<<<<<< HEAD
 
 @Entity 
 @Table(name = "login_method", 
@@ -68,3 +77,15 @@ public class LoginMethod {
     this.password = password;
     this.member = member;
   }}
+=======
+public class LoginMethod {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY) // 유니크, 자동 증가는 안하나?
+  private Long id;
+
+  @ManyToAny(fetch = FetchType.LAZY) // ????
+  @JoinColumn(name = "member_id") // FK - DB에 생성되는 컬럼 이름 부여 (Table = name 같이)
+  private Member member; // Member 엔티티의 객체 참조
+}
+>>>>>>> fd340a84aadc986b9e805b5020d4346ae5ed2aa1
