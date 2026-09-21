@@ -78,6 +78,13 @@
     <artifactId>mysql-connector-j</artifactId>
     <scope>runtime</scope>
 </dependency>
+
+<!-- 수원 문화재단 api 의존성 -->
+<dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformat-xml</artifactId>
+</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>

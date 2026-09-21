@@ -1,0 +1,92 @@
+package com.suwon.festival.service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.suwon.festival.dto.xml.EventItem;
+import com.suwon.festival.dto.xml.SwcfRssResponse;
+import com.suwon.festival.entity.Event;
+import com.suwon.festival.repository.EventRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class EventSyncService {
+
+  private final RestTemplate restTemplate;
+  private final EventRepository eventRepository;
+
+  @Value("${swcf.api.key.event}")
+  private String apiKey;
+
+  private static final DateTimeFormatter PUB_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+  public String fetchRawXml() {
+    String url = "http://www.swcf.or.kr/openAPI/?CG=29_EV&openAPIKey=" + apiKey;
+    return restTemplate.getForObject(url, String.class);
+  }
+
+  public List<EventItem> fetchEventItems() throws Exception {
+    String xml = fetchRawXml();
+    XmlMapper xmlMapper = new XmlMapper();
+    xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    SwcfRssResponse response = xmlMapper.readValue(xml, SwcfRssResponse.class);
+    return response.channel.item;
+  }
+
+  public int syncEvents() throws Exception {
+    List<EventItem> items = fetchEventItems();
+    int savedCount = 0;
+
+    for (EventItem item : items) {
+      if (eventRepository.existsByIdx(item.idx)) {
+        continue; // 이미 저장된 행사는 건너뜀
+      }
+
+      if (item.coordinate == null || item.coordinate.lat == null || item.coordinate.lng == null) {
+        continue; // 좌표 정보가 불완전한 행사는 건너뜀
+      }
+
+      Event event = Event.builder()
+          .idx(item.idx)
+          .title(item.title)
+          .category(item.category)
+          .latitude(item.coordinate.lng) // lat/lng 뒤바뀜 주의!
+          .longitude(item.coordinate.lat)
+          .imageUrl(extractImageUrl(item))
+          .info(extractInfo(item))
+          .pubDate(LocalDateTime.parse(item.pubDate, PUB_DATE_FORMAT))
+          .build();
+
+      eventRepository.save(event);
+      savedCount++;
+    }
+
+    return savedCount;
+  }
+
+  private String extractImageUrl(EventItem item) {
+    if (item.photos == null || item.photos.photoInfo == null || item.photos.photoInfo.isEmpty()) {
+      return null;
+    }
+    return item.photos.photoInfo.get(0).photoUrl;
+  }
+
+  private String extractInfo(EventItem item) {
+    if (item.contentInfo == null || item.contentInfo.contentInfoDetail == null) {
+      return item.description;
+    }
+    return item.contentInfo.contentInfoDetail.stream()
+        .map(detail -> detail.infoItem + ": " + detail.infoContent)
+        .collect(Collectors.joining("\n"));
+  }
+}

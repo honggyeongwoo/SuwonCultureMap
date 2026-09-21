@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>수원 문화 프로그램 지도</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
+      #map {
+        width: 100%;
+        height: 100vh;
+      }
+      #controls {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+      #controls input,
+      #controls select {
+        padding: 6px;
+        margin-right: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <input type="text" id="searchInput" placeholder="행사 이름 검색" />
+      <select id="categorySelect">
+        <option value="all">전체 카테고리</option>
+      </select>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7e3b2a42df77bc183241db2bcc6c3cbb&autoload=false"></script>
+    <script>
+      var map;
+      var markerList = [];
+      var currentInfowindow = null;
+
+      kakao.maps.load(function () {
+        var mapContainer = document.getElementById("map");
+        var mapOption = {
+          center: new kakao.maps.LatLng(37.2636, 127.0286),
+          level: 6,
+        };
+        map = new kakao.maps.Map(mapContainer, mapOption);
+
+        fetch("/api/events")
+          .then((response) => response.json())
+          .then((events) => {
+            setupCategoryOptions(events);
+
+            events.forEach(function (event) {
+              var markerPosition = new kakao.maps.LatLng(
+                event.latitude,
+                event.longitude,
+              );
+              var marker = new kakao.maps.Marker({ position: markerPosition });
+              marker.setMap(map);
+
+              var infowindow = new kakao.maps.InfoWindow({
+                content: '<div style="padding:5px;">' + event.title + "</div>",
+              });
+
+              kakao.maps.event.addListener(marker, "click", function () {
+                toggleInfowindow(infowindow, marker);
+              });
+
+              markerList.push({
+                marker: marker,
+                event: event,
+                infowindow: infowindow,
+              });
+            });
+          });
+      });
+
+      function toggleInfowindow(infowindow, marker) {
+        if (currentInfowindow === infowindow) {
+          infowindow.close();
+          currentInfowindow = null;
+          return;
+        }
+
+        if (currentInfowindow) {
+          currentInfowindow.close();
+        }
+
+        infowindow.open(map, marker);
+        currentInfowindow = infowindow;
+      }
+
+      function setupCategoryOptions(events) {
+        var categories = [...new Set(events.map((e) => e.category))];
+        var select = document.getElementById("categorySelect");
+        categories.forEach(function (category) {
+          var option = document.createElement("option");
+          option.value = category;
+          option.textContent = category;
+          select.appendChild(option);
+        });
+      }
+
+      function filterMarkers() {
+        var keyword = document.getElementById("searchInput").value.trim();
+        var selectedCategory = document.getElementById("categorySelect").value;
+
+        if (currentInfowindow) {
+          currentInfowindow.close();
+          currentInfowindow = null;
+        }
+
+        markerList.forEach(function (item) {
+          var matchesKeyword = item.event.title.includes(keyword);
+          var matchesCategory =
+            selectedCategory === "all" ||
+            item.event.category === selectedCategory;
+
+          if (matchesKeyword && matchesCategory) {
+            item.marker.setMap(map);
+          } else {
+            item.marker.setMap(null);
+          }
+        });
+      }
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", filterMarkers);
+      document
+        .getElementById("categorySelect")
+        .addEventListener("change", filterMarkers);
+    </script>
+  </body>
+</html>
