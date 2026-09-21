@@ -1,5 +1,6 @@
 package com.suwon.festival.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,6 +16,7 @@ import com.suwon.festival.dto.xml.EventItem;
 import com.suwon.festival.dto.xml.SwcfRssResponse;
 import com.suwon.festival.entity.Event;
 import com.suwon.festival.repository.EventRepository;
+import java.time.LocalDate;
 
 import lombok.RequiredArgsConstructor;
 
@@ -65,6 +67,8 @@ public class EventSyncService {
           .imageUrl(extractImageUrl(item))
           .info(extractInfo(item))
           .pubDate(LocalDateTime.parse(item.pubDate, PUB_DATE_FORMAT))
+          .startDate(item.eventDate != null ? LocalDate.parse(item.eventDate.sdate) : null)
+          .endDate(item.eventDate != null ? LocalDate.parse(item.eventDate.edate) : null)
           .build();
 
       eventRepository.save(event);

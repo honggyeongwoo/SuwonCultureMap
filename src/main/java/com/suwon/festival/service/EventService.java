@@ -25,7 +25,10 @@ public class EventService {
             event.getLongitude(),
             event.getImageUrl(),
             event.getInfo(),
-            event.getPubDate()))
+            event.getPubDate(),
+            event.getStartDate(),
+            event.getEndDate()))
+
         .toList();
   }
 }

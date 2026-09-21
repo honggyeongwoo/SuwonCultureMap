@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "event")
@@ -61,9 +62,15 @@ public class Event {
   // 재단 원본의 발행/수정 시점. 배치 동기화 때
   // "이 값이 DB에 저장된 값보다 최신이면 업데이트" 판단 기준으로 사용
 
+  @Column
+  private LocalDate startDate; // 행사 시작일
+
+  @Column
+  private LocalDate endDate; // 행사 종료일
+
   @Builder
   public Event(Long idx, String title, String category, Double latitude,
-      Double longitude, String imageUrl, String info, LocalDateTime pubDate) {
+      Double longitude, String imageUrl, String info, LocalDateTime pubDate, LocalDate startDate, LocalDate endDate) {
     this.idx = idx;
     this.title = title;
     this.category = category;
@@ -72,5 +79,7 @@ public class Event {
     this.imageUrl = imageUrl;
     this.info = info;
     this.pubDate = pubDate;
+    this.startDate = startDate;
+    this.endDate = endDate;
   }
 }

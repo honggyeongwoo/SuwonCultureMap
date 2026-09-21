@@ -61,7 +61,9 @@ public class FavoriteService {
             event.getLongitude(),
             event.getImageUrl(),
             event.getInfo(),
-            event.getPubDate()))
+            event.getPubDate(),
+            event.getStartDate(),
+            event.getEndDate()))
         .collect(Collectors.toList());
   }
 }
