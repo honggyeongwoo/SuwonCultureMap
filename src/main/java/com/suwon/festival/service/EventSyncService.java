@@ -61,6 +61,7 @@ public class EventSyncService {
       Event event = Event.builder()
           .idx(item.idx)
           .title(item.title)
+          .category("전체".equals(item.category) ? "기타" : item.category)
           .category(item.category)
           .latitude(item.coordinate.lng) // lat/lng 뒤바뀜 주의!
           .longitude(item.coordinate.lat)

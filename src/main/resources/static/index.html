@@ -1,307 +1,655 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>수원 문화 프로그램 지도</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <title>수원 문화 프로그램 지도</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+      #topbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: #222;
+        color: #fff;
+        font-size: 0.85rem;
+        flex-wrap: wrap;
+      }
+      #topbar input,
+      #topbar select {
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      #authStatus {
+        margin-left: auto;
+        margin-right: 4px;
+      }
+      .login-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        border: none;
+        cursor: pointer;
+      }
+      .login-btn.kakao {
+        background: #fee500;
+        color: #000;
+      }
+      .login-btn.google {
+        background: #fff;
+        color: #000;
+      }
+      .login-btn.naver {
+        background: #03c75a;
+        color: #fff;
+      }
+      .login-btn.sync {
+        background: #4a90d9;
+        color: #fff;
+      }
+      .login-btn.logout {
+        background: #555;
+        color: #fff;
+      }
 
-    #app {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-    }
+      #app {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+      }
+      #map {
+        flex: 1;
+      }
 
-    #sidebar {
-      width: 320px;
-      flex: none;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #ddd;
-      background: #fff;
-    }
+      #sidebar {
+        width: 450px;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #ddd;
+        background: #fff;
+      }
+      #list {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .event-item {
+        position: relative; /* 별 배지 위치 잡으려고 추가 */
+        display: flex;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+      }
+      /* ===== 찜한 행사 표시 (Side-bar 카드 우측 상단 별) ===== */
+      .favorite-badge {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        font-size: 1rem;
+        color: #f5a623;
+      }
+      .event-item:hover {
+        background: #f7f7f7;
+      }
+      .event-item .date {
+        font-size: 0.78rem;
+        color: #888;
+      }
+      .event-item .title {
+        font-size: 0.9rem;
+        margin-top: 2px;
+      }
 
-    #controls {
-      padding: 10px;
-      display: flex;
-      gap: 6px;
-      border-bottom: 1px solid #eee;
-    }
+      /* ===== Side-bar 이벤트 카드 ===== */
+      .event-item {
+        display: flex;
+        position: relative; /* ← 이 줄 추가 */
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+      }
+      .event-item:hover {
+        background: #f7f7f7;
+      }
+      .event-thumb {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex: none;
+        background: #eee;
+      }
+      .event-body {
+        flex: 1;
+        min-width: 0;
+      }
+      .event-body .date {
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .event-body .title {
+        font-size: 0.9rem;
+        margin-top: 2px;
+        font-weight: 600;
+      }
+      .event-body .info {
+        font-size: 0.78rem;
+        color: #666;
+        margin-top: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
 
-    #controls input,
-    #controls select {
-      padding: 6px;
-    }
+      /* ===== 상세정보 큰 팝업창 ===== */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+      .modal-card {
+        background: #fff;
+        width: 420px;
+        max-width: 90vw;
+        max-height: 85vh;
+        overflow-y: auto;
+        border-radius: 12px;
+        position: relative;
+      }
+      .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #fff;
+        z-index: 2;
+      }
+      .modal-image {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        display: block;
+        background: #ddd;
+      }
+      .modal-body {
+        padding: 16px 20px;
+      }
+      .modal-date {
+        font-size: 0.8rem;
+        color: #888;
+      }
+      .modal-title {
+        font-size: 1.15rem;
+        margin: 6px 0 10px;
+      }
+      .modal-info {
+        font-size: 0.88rem;
+        color: #444;
+        white-space: pre-line;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .favorite-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid #f5a623;
+        background: #fff;
+        color: #f5a623;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .favorite-btn.active {
+        background: #f5a623;
+        color: #fff;
+      }
 
-    #list {
-      flex: 1;
-      overflow-y: auto;
-    }
+      /* ===== 마커 InfoWindow 제목 (클릭 가능) ===== */
+      .infowindow-title {
+        padding: 6px 8px;
+        cursor: pointer;
+        color: #2f6f6b;
+        text-decoration: underline;
+        font-size: 0.85rem;
+        max-width: 400px;
+        white-space: normal;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="topbar">
+      <select id="categorySelect">
+        <option value="all">전체 카테고리</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="행사 이름 검색" />
+      <span id="authStatus">로그인 확인 중...</span>
+      <a
+        id="kakaoLoginBtn"
+        class="login-btn kakao"
+        href="https://kauth.kakao.com/oauth/authorize?client_id=e9da4327b7be240f13ddd639379fe1fc&redirect_uri=http://localhost:8080/api/auth/kakao/callback&response_type=code"
+        >카카오 로그인</a
+      >
+      <a
+        id="googleLoginBtn"
+        class="login-btn google"
+        href="https://accounts.google.com/o/oauth2/v2/auth?client_id=440681864198-k826a7epdj47stfnp7omhufp6rm7dbg7.apps.googleusercontent.com&redirect_uri=http://localhost:8080/api/auth/google/callback&response_type=code&scope=email%20profile"
+        >구글 로그인</a
+      >
+      <a
+        id="naverLoginBtn"
+        class="login-btn naver"
+        href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=Q7X7EYInh1P5DiiyuSy0&redirect_uri=http://localhost:8080/api/auth/naver/callback&state=test123"
+        >네이버 로그인</a
+      >
+      <button id="syncBtn" class="login-btn sync">행사 동기화</button>
+      <button id="logoutBtn" class="login-btn logout" style="display: none">
+        로그아웃
+      </button>
+    </div>
 
-    .event-item {
-      padding: 10px 14px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-    }
+    <div id="app">
+      <div id="map"></div>
+      <aside id="sidebar">
+        <div id="list"></div>
+      </aside>
+    </div>
 
-    .event-item:hover {
-      background: #f7f7f7;
-    }
-
-    .event-item .date {
-      font-size: 0.78rem;
-      color: #888;
-    }
-
-    .event-item .title {
-      font-size: 0.9rem;
-      margin-top: 2px;
-    }
-
-    #map {
-      flex: 1;
-    }
-
-    #authBar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      background: #222;
-      color: #fff;
-      font-size: 0.85rem;
-    }
-
-    #authStatus {
-      flex: 1;
-    }
-
-    .login-btn {
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.8rem;
-      border: none;
-      cursor: pointer;
-    }
-
-    .login-btn.kakao {
-      background: #FEE500;
-      color: #000;
-    }
-
-    .login-btn.google {
-      background: #fff;
-      color: #000;
-    }
-
-    .login-btn.naver {
-      background: #03C75A;
-      color: #fff;
-    }
-
-    .login-btn.logout {
-      background: #555;
-      color: #fff;
-    }
-  </style>
-</head>
-
-<body>
-  <!-- 로그인 바 -->
-  <div id="authBar">
-    <span id="authStatus">로그인 확인 중...</span>
-    <a id="kakaoLoginBtn" class="login-btn kakao"
-      href="https://kauth.kakao.com/oauth/authorize?client_id=e9da4327b7be240f13ddd639379fe1fc&redirect_uri=http://localhost:8080/api/auth/kakao/callback&response_type=code">카카오
-      로그인</a>
-    <a id="googleLoginBtn" class="login-btn google"
-      href="https://accounts.google.com/o/oauth2/v2/auth?client_id=440681864198-k826a7epdj47stfnp7omhufp6rm7dbg7.apps.googleusercontent.com&redirect_uri=http://localhost:8080/api/auth/google/callback&response_type=code&scope=email%20profile">구글
-      로그인</a>
-    <a id="naverLoginBtn" class="login-btn naver"
-      href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=Q7X7EYInh1P5DiiyuSy0&redirect_uri=http://localhost:8080/api/auth/naver/callback&state=test123">네이버
-      로그인</a>
-    <button id="logoutBtn" class="login-btn logout" style="display:none;">로그아웃</button>
-  </div>
-  <!--  -->
-  <div id="app">
-    <aside id="sidebar">
-      <div id="controls">
-        <input type="text" id="searchInput" placeholder="행사 이름 검색">
-        <select id="categorySelect">
-          <option value="all">전체 카테고리</option>
-        </select>
+    <!-- ===== 상세정보 큰 팝업창 ===== -->
+    <div id="detailModal" class="modal-overlay" style="display: none">
+      <div class="modal-card">
+        <button id="modalCloseBtn" class="modal-close">×</button>
+        <img id="modalImage" class="modal-image" src="" alt="" />
+        <div class="modal-body">
+          <div id="modalDate" class="modal-date"></div>
+          <h2 id="modalTitle" class="modal-title"></h2>
+          <div id="modalInfo" class="modal-info"></div>
+          <button id="modalFavoriteBtn" class="favorite-btn">☆ 즐겨찾기</button>
+        </div>
       </div>
-      <div id="list"></div>
-    </aside>
-    <div id="map"></div>
-  </div>
+    </div>
 
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7e3b2a42df77bc183241db2bcc6c3cbb&autoload=false"></script>
-  <script>
-    var map;
-    var markerList = [];
-    var currentInfowindow = null;
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7e3b2a42df77bc183241db2bcc6c3cbb&autoload=false"></script>
+    <script>
+      var map;
+      var markerList = [];
+      var currentInfowindow = null;
 
-    kakao.maps.load(function () {
-      var mapContainer = document.getElementById('map');
-      var mapOption = {
-        center: new kakao.maps.LatLng(37.2636, 127.0286),
-        level: 6
+      // ===== 카테고리별 마커 아이콘 =====
+      var CATEGORY_STYLE = {
+        행사: { color: "#4A90D9", emoji: "📅" },
+        공연: { color: "#D9534F", emoji: "🎤" },
+        전시: { color: "#8E44AD", emoji: "🎨" },
+        축제: { color: "#F5A623", emoji: "🎉" },
+        기타: { color: "#7F8C8D", emoji: "📌" },
       };
-      map = new kakao.maps.Map(mapContainer, mapOption);
+
+      function createMarkerIcon(category) {
+        var style = CATEGORY_STYLE[category] || CATEGORY_STYLE["기타"];
+        var svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36">' +
+          '<circle cx="18" cy="18" r="16" fill="' +
+          style.color +
+          '" stroke="#fff" stroke-width="2"/>' +
+          '<text x="18" y="24" font-size="16" text-anchor="middle">' +
+          style.emoji +
+          "</text>" +
+          "</svg>";
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+      }
+
+      kakao.maps.load(function () {
+        var mapContainer = document.getElementById("map");
+        var mapOption = {
+          center: new kakao.maps.LatLng(37.2636, 127.0286),
+          level: 6,
+        };
+        map = new kakao.maps.Map(mapContainer, mapOption);
+
+        fetch("/api/events")
+          .then((response) => response.json())
+          .then((events) => {
+            setupCategoryOptions(events);
+
+            events.forEach(function (event) {
+              var markerPosition = new kakao.maps.LatLng(
+                event.latitude,
+                event.longitude,
+              );
+
+              var markerImage = new kakao.maps.MarkerImage(
+                createMarkerIcon(event.category),
+                new kakao.maps.Size(36, 36),
+              );
+              var marker = new kakao.maps.Marker({
+                position: markerPosition,
+                image: markerImage,
+              });
+
+              marker.setMap(map);
+
+              var infowindow = new kakao.maps.InfoWindow({
+                content:
+                  '<div style="padding:6px 8px; cursor:pointer; color:#2f6f6b; text-decoration:underline; font-size:0.85rem; width:260px; white-space:normal; word-break:break-word; text-align:center;" onclick="openDetailFromMarker(' +
+                  event.id +
+                  ')">' +
+                  event.title +
+                  "</div>",
+              });
+              kakao.maps.event.addListener(marker, "click", function () {
+                toggleInfowindow(infowindow, marker);
+              });
+
+              markerList.push({
+                marker: marker,
+                event: event,
+                infowindow: infowindow,
+              });
+            });
+
+            filterMarkers();
+          });
+      });
+
+      function toggleInfowindow(infowindow, marker) {
+        if (currentInfowindow === infowindow) {
+          infowindow.close();
+          currentInfowindow = null;
+          return;
+        }
+        if (currentInfowindow) {
+          currentInfowindow.close();
+        }
+        infowindow.open(map, marker);
+        currentInfowindow = infowindow;
+      }
+
+      // ===== 카테고리 드롭다운 순서 고정 + "찜"(가상 카테고리) 추가 =====
+      var CATEGORY_ORDER = ["행사", "공연", "전시", "축제", "찜", "기타"];
+
+      function setupCategoryOptions(events) {
+        var categories = [...new Set(events.map((e) => e.category))];
+        var select = document.getElementById("categorySelect");
+
+        CATEGORY_ORDER.forEach(function (category) {
+          // '찜'은 실제 DB 카테고리가 아니라 항상 넣어줌
+          if (category === "찜" || categories.includes(category)) {
+            var option = document.createElement("option");
+            option.value = category;
+            option.textContent = category;
+            select.appendChild(option);
+          }
+        });
+      }
+
+      // ===== 필터링 (검색어 + 카테고리, '찜'은 즐겨찾기 목록으로 필터) =====
+      function filterMarkers() {
+        var keyword = document.getElementById("searchInput").value.trim();
+        var selectedCategory = document.getElementById("categorySelect").value;
+
+        if (currentInfowindow) {
+          currentInfowindow.close();
+          currentInfowindow = null;
+        }
+
+        var visibleItems = [];
+
+        markerList.forEach(function (item) {
+          var matchesKeyword = item.event.title.includes(keyword);
+          var matchesCategory;
+
+          if (selectedCategory === "all") {
+            matchesCategory = true;
+          } else if (selectedCategory === "찜") {
+            matchesCategory = favoriteEventIds.has(item.event.id);
+          } else {
+            matchesCategory = item.event.category === selectedCategory;
+          }
+
+          var visible = matchesKeyword && matchesCategory;
+
+          item.marker.setMap(visible ? map : null);
+
+          if (visible) {
+            visibleItems.push(item);
+          }
+        });
+
+        renderSidebar(visibleItems);
+      }
+
+      // ===== Side-bar 카드 렌더링 (이미지 + 제목 + info) =====
+      function renderSidebar(items) {
+        var sorted = items.slice().sort(function (a, b) {
+          var da = a.event.startDate;
+          var db = b.event.startDate;
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return da.localeCompare(db);
+        });
+
+        var list = document.getElementById("list");
+        list.innerHTML = "";
+
+        sorted.forEach(function (item) {
+          var div = document.createElement("div");
+          div.className = "event-item";
+
+          var dateText = item.event.startDate
+            ? item.event.startDate +
+              (item.event.endDate && item.event.endDate !== item.event.startDate
+                ? " ~ " + item.event.endDate
+                : "")
+            : "기간 정보 없음";
+
+          var imgSrc = item.event.imageUrl || "";
+          var infoText = item.event.info || "";
+          var isFavorited = favoriteEventIds.has(item.event.id); // 찜 여부 확인
+
+          div.innerHTML =
+            '<img class="event-thumb" src="' +
+            imgSrc +
+            '" onerror="this.style.visibility=\'hidden\'">' +
+            (isFavorited ? '<span class="favorite-badge">★</span>' : "") + // 찜한 행사만 별 표시
+            '<div class="event-body">' +
+            '<div class="date">' +
+            dateText +
+            "</div>" +
+            '<div class="title">' +
+            item.event.title +
+            "</div>" +
+            '<div class="info">' +
+            infoText +
+            "</div>" +
+            "</div>";
+
+          div.addEventListener("click", function () {
+            map.setCenter(item.marker.getPosition());
+            map.setLevel(5);
+            openDetailModal(item.event);
+          });
+
+          list.appendChild(div);
+        });
+      }
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", filterMarkers);
+      document
+        .getElementById("categorySelect")
+        .addEventListener("change", filterMarkers);
+
+      document.getElementById("syncBtn").addEventListener("click", function () {
+        fetch("/api/events/sync", { method: "POST" })
+          .then((r) => r.text())
+          .then(function (msg) {
+            alert(msg);
+            location.reload();
+          });
+      });
+
+      // ===== 로그인 상태 + 내 즐겨찾기 목록 확인 =====
+      var isLoggedIn = false;
+      var favoriteEventIds = new Set();
 
       function checkAuth() {
-        fetch('/api/auth/me')
-          .then(r => r.json())
-          .then(data => {
-            var status = document.getElementById('authStatus');
-            var kakaoBtn = document.getElementById('kakaoLoginBtn');
-            var googleBtn = document.getElementById('googleLoginBtn');
-            var naverBtn = document.getElementById('naverLoginBtn');
-            var logoutBtn = document.getElementById('logoutBtn');
+        fetch("/api/auth/me")
+          .then((r) => r.json())
+          .then(function (data) {
+            isLoggedIn = data.loggedIn;
 
-            if (data.loggedIn) {
-              status.textContent = '로그인됨 (회원 번호: ' + data.memberId + ')';
-              kakaoBtn.style.display = 'none';
-              googleBtn.style.display = 'none';
-              naverBtn.style.display = 'none';
-              logoutBtn.style.display = 'inline-block';
+            var status = document.getElementById("authStatus");
+            var kakaoBtn = document.getElementById("kakaoLoginBtn");
+            var googleBtn = document.getElementById("googleLoginBtn");
+            var naverBtn = document.getElementById("naverLoginBtn");
+            var logoutBtn = document.getElementById("logoutBtn");
+
+            if (isLoggedIn) {
+              status.textContent =
+                "로그인됨 (회원 번호: " + data.memberId + ")";
+              kakaoBtn.style.display = "none";
+              googleBtn.style.display = "none";
+              naverBtn.style.display = "none";
+              logoutBtn.style.display = "inline-block";
+              return fetch("/api/favorites").then((r) => r.json()); // 로그인 상태면 즐겨찾기 목록도 받아옴
             } else {
-              status.textContent = '로그인 안 됨';
-              kakaoBtn.style.display = 'inline-block';
-              googleBtn.style.display = 'inline-block';
-              naverBtn.style.display = 'inline-block';
-              logoutBtn.style.display = 'none';
+              status.textContent = "로그인 안 됨";
+              kakaoBtn.style.display = "inline-block";
+              googleBtn.style.display = "inline-block";
+              naverBtn.style.display = "inline-block";
+              logoutBtn.style.display = "none";
+              return [];
             }
+          })
+          .then(function (favorites) {
+            favoriteEventIds = new Set(
+              favorites.map(function (e) {
+                return e.id;
+              }),
+            );
+            filterMarkers(); // ← 즐겨찾기 목록 다 받아온 뒤, 화면도 한 번 더 새로 그림
           });
       }
 
-      document.getElementById('logoutBtn').addEventListener('click', function () {
-        fetch('/api/auth/logout', { method: 'POST' }).then(function () {
-          checkAuth();
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", function () {
+          fetch("/api/auth/logout", { method: "POST" }).then(function () {
+            checkAuth();
+          });
         });
-      });
 
       checkAuth();
 
-      fetch('/api/events')
-        .then(response => response.json())
-        .then(events => {
-          setupCategoryOptions(events);
+      // ===== 상세정보 큰 팝업창 열기/닫기 =====
+      function openDetailModal(event) {
+        document.getElementById("modalImage").src = event.imageUrl || "";
+        document.getElementById("modalTitle").textContent = event.title;
+        document.getElementById("modalDate").textContent = event.startDate
+          ? event.startDate +
+            (event.endDate && event.endDate !== event.startDate
+              ? " ~ " + event.endDate
+              : "")
+          : "기간 정보 없음";
+        document.getElementById("modalInfo").textContent = event.info || "";
 
-          events.forEach(function (event) {
-            var markerPosition = new kakao.maps.LatLng(event.latitude, event.longitude);
-            var marker = new kakao.maps.Marker({ position: markerPosition });
-            marker.setMap(map);
+        updateFavoriteButton(event.id);
 
-            var infowindow = new kakao.maps.InfoWindow({
-              content: '<div style="padding:5px;">' + event.title + '</div>'
-            });
+        document.getElementById("modalFavoriteBtn").onclick = function () {
+          toggleFavorite(event.id);
+        };
 
-            kakao.maps.event.addListener(marker, 'click', function () {
-              toggleInfowindow(infowindow, marker);
-            });
+        document.getElementById("detailModal").style.display = "flex";
+      }
 
-            markerList.push({ marker: marker, event: event, infowindow: infowindow });
-          });
-
-          filterMarkers();
+      // ===== 마커 InfoWindow 제목 클릭 → 상세 팝업 열기 =====
+      function openDetailFromMarker(eventId) {
+        var found = markerList.find(function (item) {
+          return item.event.id === eventId;
         });
-    });
-
-    function toggleInfowindow(infowindow, marker) {
-      if (currentInfowindow === infowindow) {
-        infowindow.close();
-        currentInfowindow = null;
-        return;
-      }
-      if (currentInfowindow) {
-        currentInfowindow.close();
-      }
-      infowindow.open(map, marker);
-      currentInfowindow = infowindow;
-    }
-
-    function setupCategoryOptions(events) {
-      var categories = [...new Set(events.map(e => e.category))];
-      var select = document.getElementById('categorySelect');
-      categories.forEach(function (category) {
-        var option = document.createElement('option');
-        option.value = category;
-        option.textContent = category;
-        select.appendChild(option);
-      });
-    }
-
-    function filterMarkers() {
-      var keyword = document.getElementById('searchInput').value.trim();
-      var selectedCategory = document.getElementById('categorySelect').value;
-
-      if (currentInfowindow) {
-        currentInfowindow.close();
-        currentInfowindow = null;
-      }
-
-      var visibleItems = [];
-
-      markerList.forEach(function (item) {
-        var matchesKeyword = item.event.title.includes(keyword);
-        var matchesCategory = (selectedCategory === 'all') || (item.event.category === selectedCategory);
-        var visible = matchesKeyword && matchesCategory;
-
-        item.marker.setMap(visible ? map : null);
-
-        if (visible) {
-          visibleItems.push(item);
+        if (found) {
+          openDetailModal(found.event);
         }
-      });
+      }
 
-      renderSidebar(visibleItems);
-    }
+      function closeDetailModal() {
+        document.getElementById("detailModal").style.display = "none";
+      }
 
-    function renderSidebar(items) {
-      var sorted = items.slice().sort(function (a, b) {
-        var da = a.event.startDate;
-        var db = b.event.startDate;
-        if (!da && !db) return 0;
-        if (!da) return 1;
-        if (!db) return -1;
-        return da.localeCompare(db);
-      });
+      // ===== 즐겨찾기 버튼 상태/토글 =====
+      function updateFavoriteButton(eventId) {
+        var btn = document.getElementById("modalFavoriteBtn");
+        if (favoriteEventIds.has(eventId)) {
+          btn.textContent = "★ 즐겨찾기됨";
+          btn.classList.add("active");
+        } else {
+          btn.textContent = "☆ 즐겨찾기";
+          btn.classList.remove("active");
+        }
+      }
 
-      var list = document.getElementById('list');
-      list.innerHTML = '';
+      function toggleFavorite(eventId) {
+        if (!isLoggedIn) {
+          alert("로그인이 필요합니다."); // 비회원 - 회원가입/로그인 유도
+          return;
+        }
 
-      sorted.forEach(function (item) {
-        var div = document.createElement('div');
-        div.className = 'event-item';
+        var isFavorited = favoriteEventIds.has(eventId);
+        var method = isFavorited ? "DELETE" : "POST";
 
-        var dateText = item.event.startDate
-          ? item.event.startDate + (item.event.endDate && item.event.endDate !== item.event.startDate ? ' ~ ' + item.event.endDate : '')
-          : '기간 정보 없음';
+        fetch("/api/favorites/" + eventId, { method: method })
+          .then(function (response) {
+            if (!response.ok) {
+              return response.text().then(function (text) {
+                throw new Error(text);
+              });
+            }
+            if (isFavorited) {
+              favoriteEventIds.delete(eventId);
+            } else {
+              favoriteEventIds.add(eventId);
+            }
+            updateFavoriteButton(eventId);
+            filterMarkers(); // ← 여기로 옮김 (진짜로 상태 바뀐 다음에 다시 그림)
+          })
+          .catch(function (err) {
+            alert(err.message);
+          });
+      }
 
-        div.innerHTML = '<div class="date">' + dateText + '</div><div class="title">' + item.event.title + '</div>';
-
-        div.addEventListener('click', function () {
-          map.setCenter(item.marker.getPosition());
-          map.setLevel(5);
-          toggleInfowindow(item.infowindow, item.marker);
+      document
+        .getElementById("modalCloseBtn")
+        .addEventListener("click", closeDetailModal);
+      document
+        .getElementById("detailModal")
+        .addEventListener("click", function (e) {
+          if (e.target.id === "detailModal") {
+            closeDetailModal(); // 배경 클릭하면 닫힘
+          }
         });
-
-        list.appendChild(div);
-      });
-    }
-
-    document.getElementById('searchInput').addEventListener('input', filterMarkers);
-    document.getElementById('categorySelect').addEventListener('change', filterMarkers);
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
