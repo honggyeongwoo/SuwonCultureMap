@@ -68,9 +68,13 @@ public class Event {
   @Column
   private LocalDate endDate; // 행사 종료일
 
+  @Column(length = 1000)
+  private String link; // 재단 원문 상세 페이지 URL
+
   @Builder
   public Event(Long idx, String title, String category, Double latitude,
-      Double longitude, String imageUrl, String info, LocalDateTime pubDate, LocalDate startDate, LocalDate endDate) {
+      Double longitude, String imageUrl, String info, LocalDateTime pubDate, LocalDate startDate, LocalDate endDate,
+      String link) {
     this.idx = idx;
     this.title = title;
     this.category = category;
@@ -81,5 +85,6 @@ public class Event {
     this.pubDate = pubDate;
     this.startDate = startDate;
     this.endDate = endDate;
+    this.link = link;
   }
 }

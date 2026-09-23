@@ -225,6 +225,22 @@
         background: #f5a623;
         color: #fff;
       }
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .modal-link-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid #4a90d9;
+        background: #fff;
+        color: #4a90d9;
+        cursor: pointer;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
 
       /* ===== 마커 InfoWindow 제목 (클릭 가능) ===== */
       .infowindow-title {
@@ -286,7 +302,10 @@
           <div id="modalDate" class="modal-date"></div>
           <h2 id="modalTitle" class="modal-title"></h2>
           <div id="modalInfo" class="modal-info"></div>
-          <button id="modalFavoriteBtn" class="favorite-btn">☆ 즐겨찾기</button>
+          <div class="modal-actions">
+            <button id="modalFavoriteBtn" class="favorite-btn">☆ 즐겨찾기</button>
+            <a id="modalLinkBtn" class="modal-link-btn" href="#" target="_blank" rel="noopener">원문 보기 →</a>
+          </div>
         </div>
       </div>
     </div>
@@ -606,6 +625,15 @@
               : "")
           : "기간 정보 없음";
         document.getElementById("modalInfo").textContent = event.info || "";
+
+        // ===== 원문 링크 버튼: link 없으면 숨김 =====
+        var linkBtn = document.getElementById("modalLinkBtn");
+        if (event.link) {
+          linkBtn.href = event.link;
+          linkBtn.style.display = "inline-flex";
+        } else {
+          linkBtn.style.display = "none";
+        }
 
         updateFavoriteButton(event.id);
 

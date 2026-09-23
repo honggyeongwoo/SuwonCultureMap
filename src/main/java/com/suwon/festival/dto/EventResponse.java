@@ -13,5 +13,6 @@ public record EventResponse(
         String info,
         LocalDateTime pubDate,
         LocalDate startDate,
-        LocalDate endDate) {
+        LocalDate endDate,
+        String link) {
 }

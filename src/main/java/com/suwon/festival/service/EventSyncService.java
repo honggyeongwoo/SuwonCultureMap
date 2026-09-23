@@ -70,6 +70,7 @@ public class EventSyncService {
           .pubDate(LocalDateTime.parse(item.pubDate, PUB_DATE_FORMAT))
           .startDate(item.eventDate != null ? LocalDate.parse(item.eventDate.sdate) : null)
           .endDate(item.eventDate != null ? LocalDate.parse(item.eventDate.edate) : null)
+          .link(item.link)
           .build();
 
       eventRepository.save(event);
