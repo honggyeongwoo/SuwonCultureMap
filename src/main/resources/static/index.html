@@ -440,7 +440,37 @@
         renderSidebar(visibleItems);
       }
 
-      // ===== Side-bar 카드 렌더링 (이미지 + 제목 + info) =====
+      // ===== Side-bar용 info 요약 (이용료/장소/시간만 추출) =====
+      function extractSummaryInfo(infoText) {
+        if (!infoText) return "";
+
+        // "라벨: 내용" 형태의 줄들을 라벨 기준으로 매핑
+        var map = {};
+        infoText.split("\n").forEach(function (line) {
+          var idx = line.indexOf(":");
+          if (idx === -1) return;
+          var label = line.substring(0, idx).trim();
+          map[label] = line;
+        });
+
+        var result = [];
+
+        // 1) 이용료, 장소 순서로 먼저 추가
+        ["이용료", "장소"].forEach(function (label) {
+          if (map[label]) result.push(map[label]);
+        });
+
+        // 2) 요일/시간 관련 라벨은 API마다 이름이 달라서 포함 여부로 탐색
+        Object.keys(map).forEach(function (label) {
+          if (label.indexOf("시간") !== -1 || label.indexOf("요일") !== -1) {
+            if (result.indexOf(map[label]) === -1) result.push(map[label]);
+          }
+        });
+
+        return result.join("\n");
+      }
+
+      // ===== Side-bar 카드 렌더링 (이미지 + 제목 + info 요약) =====
       function renderSidebar(items) {
         var sorted = items.slice().sort(function (a, b) {
           var da = a.event.startDate;
@@ -466,7 +496,7 @@
             : "기간 정보 없음";
 
           var imgSrc = item.event.imageUrl || "";
-          var infoText = item.event.info || "";
+          var infoText = extractSummaryInfo(item.event.info || ""); // 사이드바엔 이용료/장소/시간만
           var isFavorited = favoriteEventIds.has(item.event.id); // 찜 여부 확인
 
           div.innerHTML =
