@@ -63,7 +63,8 @@ public class FavoriteService {
             event.getInfo(),
             event.getPubDate(),
             event.getStartDate(),
-            event.getEndDate()))
+            event.getEndDate(),
+            event.getLink()))
         .collect(Collectors.toList());
   }
 }

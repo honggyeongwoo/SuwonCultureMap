@@ -70,6 +70,7 @@ public class EventSyncService {
           .pubDate(LocalDateTime.parse(item.pubDate, PUB_DATE_FORMAT))
           .startDate(item.eventDate != null ? LocalDate.parse(item.eventDate.sdate) : null)
           .endDate(item.eventDate != null ? LocalDate.parse(item.eventDate.edate) : null)
+          .link(item.link) // ← 이 줄 추가 (재단이 준 원문 URL을 창고에 옮겨 담기)
           .build();
 
       eventRepository.save(event);
