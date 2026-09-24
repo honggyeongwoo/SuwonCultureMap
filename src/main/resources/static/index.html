@@ -22,19 +22,16 @@
         font-size: 0.85rem;
         flex-wrap: wrap;
       }
-
       #topbar input,
       #topbar select {
         padding: 6px;
         border-radius: 6px;
         border: 1px solid #ccc;
       }
-
       #authStatus {
         margin-left: auto;
         margin-right: 4px;
       }
-
       .login-btn {
         padding: 6px 12px;
         border-radius: 6px;
@@ -43,27 +40,22 @@
         border: none;
         cursor: pointer;
       }
-
       .login-btn.kakao {
         background: #fee500;
         color: #000;
       }
-
       .login-btn.google {
         background: #fff;
         color: #000;
       }
-
       .login-btn.naver {
         background: #03c75a;
         color: #fff;
       }
-
       .login-btn.sync {
         background: #4a90d9;
         color: #fff;
       }
-
       .login-btn.logout {
         background: #555;
         color: #fff;
@@ -74,7 +66,6 @@
         flex: 1;
         min-height: 0;
       }
-
       #map {
         flex: 1;
       }
@@ -87,22 +78,18 @@
         border-left: 1px solid #ddd;
         background: #fff;
       }
-
       #list {
         flex: 1;
         overflow-y: auto;
       }
-
       .event-item {
-        position: relative;
-        /* 별 배지 위치 잡으려고 추가 */
+        position: relative; /* 별 배지 위치 잡으려고 추가 */
         display: flex;
         gap: 10px;
         padding: 10px 14px;
         border-bottom: 1px solid #f0f0f0;
         cursor: pointer;
       }
-
       /* ===== 찜한 행사 표시 (Side-bar 카드 우측 상단 별) ===== */
       .favorite-badge {
         position: absolute;
@@ -111,16 +98,13 @@
         font-size: 1rem;
         color: #f5a623;
       }
-
       .event-item:hover {
         background: #f7f7f7;
       }
-
       .event-item .date {
         font-size: 0.78rem;
         color: #888;
       }
-
       .event-item .title {
         font-size: 0.9rem;
         margin-top: 2px;
@@ -129,18 +113,15 @@
       /* ===== Side-bar 이벤트 카드 ===== */
       .event-item {
         display: flex;
-        position: relative;
-        /* ← 이 줄 추가 */
+        position: relative; /* ← 이 줄 추가 */
         gap: 10px;
         padding: 10px 14px;
         border-bottom: 1px solid #f0f0f0;
         cursor: pointer;
       }
-
       .event-item:hover {
         background: #f7f7f7;
       }
-
       .event-thumb {
         width: 150px;
         height: 150px;
@@ -149,29 +130,24 @@
         flex: none;
         background: #eee;
       }
-
       .event-body {
         flex: 1;
         min-width: 0;
       }
-
       .event-body .date {
         font-size: 0.75rem;
         color: #888;
       }
-
       .event-body .title {
         font-size: 0.9rem;
         margin-top: 2px;
         font-weight: 600;
       }
-
       .event-body .info {
         font-size: 0.78rem;
         color: #666;
         margin-top: 4px;
-        white-space: pre-line;
-        /* INFO 정보 줄 바꿈 */
+        white-space: pre-line; /* info의 \n을 실제 줄바꿈으로 표시 (모달과 동일) */
         display: -webkit-box;
         -webkit-line-clamp: 5;
         -webkit-box-orient: vertical;
@@ -191,7 +167,6 @@
         justify-content: center;
         z-index: 100;
       }
-
       .modal-card {
         background: #fff;
         width: 420px;
@@ -201,7 +176,6 @@
         border-radius: 12px;
         position: relative;
       }
-
       .modal-close {
         position: absolute;
         top: 10px;
@@ -213,7 +187,6 @@
         color: #fff;
         z-index: 2;
       }
-
       .modal-image {
         width: 100%;
         height: 220px;
@@ -221,21 +194,17 @@
         display: block;
         background: #ddd;
       }
-
       .modal-body {
         padding: 16px 20px;
       }
-
       .modal-date {
         font-size: 0.8rem;
         color: #888;
       }
-
       .modal-title {
         font-size: 1.15rem;
         margin: 6px 0 10px;
       }
-
       .modal-info {
         font-size: 0.88rem;
         color: #444;
@@ -243,7 +212,6 @@
         line-height: 1.6;
         margin-bottom: 16px;
       }
-
       .favorite-btn {
         padding: 8px 16px;
         border-radius: 8px;
@@ -253,12 +221,10 @@
         cursor: pointer;
         font-size: 0.9rem;
       }
-
       .favorite-btn.active {
         background: #f5a623;
         color: #fff;
       }
-
       .modal-actions {
         display: flex;
         gap: 8px;
@@ -289,7 +255,6 @@
       }
     </style>
   </head>
-
   <body>
     <div id="topbar">
       <select id="categorySelect">
@@ -337,19 +302,9 @@
           <div id="modalDate" class="modal-date"></div>
           <h2 id="modalTitle" class="modal-title"></h2>
           <div id="modalInfo" class="modal-info"></div>
-          <div id="modalInfo" class="modal-info"></div>
           <div class="modal-actions">
-            <button id="modalFavoriteBtn" class="favorite-btn">
-              ☆ 즐겨찾기
-            </button>
-            <a
-              id="modalLinkBtn"
-              class="modal-link-btn"
-              href="#"
-              target="_blank"
-              rel="noopener"
-              >원문 보기 →</a
-            >
+            <button id="modalFavoriteBtn" class="favorite-btn">☆ 즐겨찾기</button>
+            <a id="modalLinkBtn" class="modal-link-btn" href="#" target="_blank" rel="noopener">원문 보기 →</a>
           </div>
         </div>
       </div>
@@ -534,7 +489,7 @@
         return result.join("\n");
       }
 
-      // ===== Side-bar 카드 렌더링 (이미지 + 제목 + info) =====
+      // ===== Side-bar 카드 렌더링 (이미지 + 제목 + info 요약) =====
       function renderSidebar(items) {
         var sorted = items.slice().sort(function (a, b) {
           var da = a.event.startDate;

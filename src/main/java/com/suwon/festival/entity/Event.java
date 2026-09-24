@@ -73,8 +73,8 @@ public class Event {
 
   @Builder
   public Event(Long idx, String title, String category, Double latitude,
-      Double longitude, String imageUrl, String info, LocalDateTime pubDate,
-      LocalDate startDate, LocalDate endDate, String link) {
+      Double longitude, String imageUrl, String info, LocalDateTime pubDate, LocalDate startDate, LocalDate endDate,
+      String link) {
     this.idx = idx;
     this.title = title;
     this.category = category;
