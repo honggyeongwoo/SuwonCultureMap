@@ -261,6 +261,10 @@
         <option value="all">전체 카테고리</option>
       </select>
       <input type="text" id="searchInput" placeholder="행사 이름 검색" />
+      <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+        <input type="checkbox" id="showPastCheckbox" />
+        지난 행사 보기
+      </label>
       <span id="authStatus">로그인 확인 중...</span>
       <a
         id="kakaoLoginBtn"
@@ -423,10 +427,18 @@
         });
       }
 
-      // ===== 필터링 (검색어 + 카테고리, '찜'은 즐겨찾기 목록으로 필터) =====
+      // ===== 지난 행사 판별 (endDate가 오늘보다 이전이면 지난 행사) =====
+      function isPastEvent(event) {
+        if (!event.endDate) return false; // 종료일 정보 없으면 지난 행사로 취급 안 함
+        var today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+        return event.endDate < today;
+      }
+
+      // ===== 필터링 (검색어 + 카테고리 + 지난 행사 여부, '찜'은 즐겨찾기 목록으로 필터) =====
       function filterMarkers() {
         var keyword = document.getElementById("searchInput").value.trim();
         var selectedCategory = document.getElementById("categorySelect").value;
+        var showPast = document.getElementById("showPastCheckbox").checked;
 
         if (currentInfowindow) {
           currentInfowindow.close();
@@ -447,7 +459,9 @@
             matchesCategory = item.event.category === selectedCategory;
           }
 
-          var visible = matchesKeyword && matchesCategory;
+          var matchesPast = showPast || !isPastEvent(item.event);
+
+          var visible = matchesKeyword && matchesCategory && matchesPast;
 
           item.marker.setMap(visible ? map : null);
 
@@ -550,6 +564,9 @@
         .addEventListener("input", filterMarkers);
       document
         .getElementById("categorySelect")
+        .addEventListener("change", filterMarkers);
+      document
+        .getElementById("showPastCheckbox")
         .addEventListener("change", filterMarkers);
 
       document.getElementById("syncBtn").addEventListener("click", function () {
