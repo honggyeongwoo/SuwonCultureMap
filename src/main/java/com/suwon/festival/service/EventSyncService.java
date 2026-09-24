@@ -63,7 +63,6 @@ public class EventSyncService {
           .idx(item.idx)
           .title(HtmlUtils.htmlUnescape(item.title)) // &#39; 같은 이중 인코딩된 엔티티 복원
           .category("전체".equals(item.category) ? "기타" : item.category)
-          .category(item.category)
           .latitude(item.coordinate.lng) // lat/lng 뒤바뀜 주의!
           .longitude(item.coordinate.lat)
           .imageUrl(extractImageUrl(item))
