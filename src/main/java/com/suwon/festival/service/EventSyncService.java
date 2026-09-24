@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.HtmlUtils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -60,13 +61,13 @@ public class EventSyncService {
 
       Event event = Event.builder()
           .idx(item.idx)
-          .title(item.title)
+          .title(HtmlUtils.htmlUnescape(item.title)) // &#39; 같은 이중 인코딩된 엔티티 복원
           .category("전체".equals(item.category) ? "기타" : item.category)
           .category(item.category)
           .latitude(item.coordinate.lng) // lat/lng 뒤바뀜 주의!
           .longitude(item.coordinate.lat)
           .imageUrl(extractImageUrl(item))
-          .info(extractInfo(item))
+          .info(HtmlUtils.htmlUnescape(extractInfo(item)))
           .pubDate(LocalDateTime.parse(item.pubDate, PUB_DATE_FORMAT))
           .startDate(item.eventDate != null ? LocalDate.parse(item.eventDate.sdate) : null)
           .endDate(item.eventDate != null ? LocalDate.parse(item.eventDate.edate) : null)
