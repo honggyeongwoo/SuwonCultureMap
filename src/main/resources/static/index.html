@@ -108,10 +108,11 @@
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
         font-size: 0.9rem;
         z-index: 10;
-        transition: right 0.25s ease;
+        transition: right 0.25s ease, transform 0.25s ease;
       }
       #sidebarToggleBtn.collapsed {
-        right: 0;
+        right: 8px; /* 접혔을 때는 화면 밖으로 안 밀려나가게 오른쪽에 여백만 두고 붙임 */
+        transform: translateY(-50%); /* 접힘 상태에선 절반을 화면 밖으로 미는 translateX 제거 */
       }
       #list {
         flex: 1;
