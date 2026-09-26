@@ -311,7 +311,7 @@
 
     <div id="app">
       <div id="map"></div>
-      <button id="sidebarToggleBtn">‹</button>
+      <button id="sidebarToggleBtn">›</button>
       <aside id="sidebar">
         <div id="list"></div>
       </aside>
@@ -654,7 +654,7 @@
         sidebarCollapsed = !sidebarCollapsed;
         sidebarEl.classList.toggle("collapsed", sidebarCollapsed);
         sidebarToggleBtn.classList.toggle("collapsed", sidebarCollapsed);
-        sidebarToggleBtn.textContent = sidebarCollapsed ? "›" : "‹";
+        sidebarToggleBtn.textContent = sidebarCollapsed ? "‹" : "›";
       });
 
       // ===== 상세정보 큰 팝업창 열기/닫기 =====
