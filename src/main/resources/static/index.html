@@ -60,6 +60,10 @@
         background: #555;
         color: #fff;
       }
+      .login-btn.login {
+        background: #4a90d9;
+        color: #fff;
+      }
 
       #app {
         display: flex;
@@ -266,24 +270,7 @@
         지난 행사 보기
       </label>
       <span id="authStatus">로그인 확인 중...</span>
-      <a
-        id="kakaoLoginBtn"
-        class="login-btn kakao"
-        href="https://kauth.kakao.com/oauth/authorize?client_id=e9da4327b7be240f13ddd639379fe1fc&redirect_uri=http://localhost:8080/api/auth/kakao/callback&response_type=code"
-        >카카오 로그인</a
-      >
-      <a
-        id="googleLoginBtn"
-        class="login-btn google"
-        href="https://accounts.google.com/o/oauth2/v2/auth?client_id=440681864198-k826a7epdj47stfnp7omhufp6rm7dbg7.apps.googleusercontent.com&redirect_uri=http://localhost:8080/api/auth/google/callback&response_type=code&scope=email%20profile"
-        >구글 로그인</a
-      >
-      <a
-        id="naverLoginBtn"
-        class="login-btn naver"
-        href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=Q7X7EYInh1P5DiiyuSy0&redirect_uri=http://localhost:8080/api/auth/naver/callback&state=test123"
-        >네이버 로그인</a
-      >
+      <a id="loginPageBtn" class="login-btn login" href="login.html">로그인</a>
       <button id="syncBtn" class="login-btn sync">행사 동기화</button>
       <button id="logoutBtn" class="login-btn logout" style="display: none">
         로그아웃
@@ -589,24 +576,18 @@
             isLoggedIn = data.loggedIn;
 
             var status = document.getElementById("authStatus");
-            var kakaoBtn = document.getElementById("kakaoLoginBtn");
-            var googleBtn = document.getElementById("googleLoginBtn");
-            var naverBtn = document.getElementById("naverLoginBtn");
+            var loginPageBtn = document.getElementById("loginPageBtn");
             var logoutBtn = document.getElementById("logoutBtn");
 
             if (isLoggedIn) {
               status.textContent =
                 "로그인됨 (회원 번호: " + data.memberId + ")";
-              kakaoBtn.style.display = "none";
-              googleBtn.style.display = "none";
-              naverBtn.style.display = "none";
+              loginPageBtn.style.display = "none";
               logoutBtn.style.display = "inline-block";
               return fetch("/api/favorites").then((r) => r.json()); // 로그인 상태면 즐겨찾기 목록도 받아옴
             } else {
               status.textContent = "로그인 안 됨";
-              kakaoBtn.style.display = "inline-block";
-              googleBtn.style.display = "inline-block";
-              naverBtn.style.display = "inline-block";
+              loginPageBtn.style.display = "inline-block";
               logoutBtn.style.display = "none";
               return [];
             }

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>로그인 - 수원 문화 프로그램 지도</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f4f5f7;
+      }
+
+      .login-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        padding: 36px 32px;
+        width: 320px;
+        text-align: center;
+      }
+
+      .login-card h1 {
+        font-size: 1.2rem;
+        margin: 0 0 24px;
+      }
+
+      .social-btn {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .social-btn.kakao {
+        background: #fee500;
+        color: #000;
+      }
+      .social-btn.google {
+        background: #fff;
+        color: #000;
+        border: 1px solid #ddd;
+      }
+      .social-btn.naver {
+        background: #03c75a;
+        color: #fff;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-top: 18px;
+        font-size: 0.85rem;
+        color: #888;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-card">
+      <h1>소셜 계정으로 로그인</h1>
+
+      <!-- ===== 소셜 로그인 버튼 3종 (index.html과 동일한 인증 URL) ===== -->
+      <a
+        class="social-btn kakao"
+        href="https://kauth.kakao.com/oauth/authorize?client_id=e9da4327b7be240f13ddd639379fe1fc&redirect_uri=http://localhost:8080/api/auth/kakao/callback&response_type=code"
+        >카카오로 로그인</a
+      >
+      <a
+        class="social-btn google"
+        href="https://accounts.google.com/o/oauth2/v2/auth?client_id=440681864198-k826a7epdj47stfnp7omhufp6rm7dbg7.apps.googleusercontent.com&redirect_uri=http://localhost:8080/api/auth/google/callback&response_type=code&scope=email%20profile"
+        >구글로 로그인</a
+      >
+      <a
+        class="social-btn naver"
+        href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=Q7X7EYInh1P5DiiyuSy0&redirect_uri=http://localhost:8080/api/auth/naver/callback&state=test123"
+        >네이버로 로그인</a
+      >
+
+      <a class="back-link" href="index.html">← 지도로 돌아가기</a>
+    </div>
+  </body>
+</html>
