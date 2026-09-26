@@ -69,6 +69,7 @@
         display: flex;
         flex: 1;
         min-height: 0;
+        position: relative; /* 토글 버튼 절대 위치 기준점 */
       }
       #map {
         flex: 1;
@@ -81,6 +82,36 @@
         flex-direction: column;
         border-left: 1px solid #ddd;
         background: #fff;
+        overflow: hidden;
+        transition: width 0.25s ease;
+      }
+      #sidebar.collapsed {
+        width: 0;
+        border-left: none;
+      }
+
+      /* ===== 사이드바 접기/펼치기 토글 버튼 (네이버지도 스타일) ===== */
+      #sidebarToggleBtn {
+        position: absolute;
+        top: 50%;
+        right: 450px;
+        transform: translate(50%, -50%);
+        width: 28px;
+        height: 48px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        font-size: 0.9rem;
+        z-index: 10;
+        transition: right 0.25s ease;
+      }
+      #sidebarToggleBtn.collapsed {
+        right: 0;
       }
       #list {
         flex: 1;
@@ -279,6 +310,7 @@
 
     <div id="app">
       <div id="map"></div>
+      <button id="sidebarToggleBtn">‹</button>
       <aside id="sidebar">
         <div id="list"></div>
       </aside>
@@ -611,6 +643,18 @@
         });
 
       checkAuth();
+
+      // ===== 사이드바 접기/펼치기 토글 =====
+      var sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+      var sidebarEl = document.getElementById("sidebar");
+      var sidebarCollapsed = false;
+
+      sidebarToggleBtn.addEventListener("click", function () {
+        sidebarCollapsed = !sidebarCollapsed;
+        sidebarEl.classList.toggle("collapsed", sidebarCollapsed);
+        sidebarToggleBtn.classList.toggle("collapsed", sidebarCollapsed);
+        sidebarToggleBtn.textContent = sidebarCollapsed ? "›" : "‹";
+      });
 
       // ===== 상세정보 큰 팝업창 열기/닫기 =====
       function openDetailModal(event) {
