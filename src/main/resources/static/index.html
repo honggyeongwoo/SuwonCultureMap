@@ -10,6 +10,7 @@
         display: flex;
         flex-direction: column;
         height: 100vh;
+        overflow: hidden; /* 사이드바 접힘 애니메이션 중 스크롤바 생기는 것 방지 */
       }
 
       #topbar {
@@ -310,7 +311,7 @@
 
     <div id="app">
       <div id="map"></div>
-      <button id="sidebarToggleBtn">‹</button>
+      <button id="sidebarToggleBtn">›</button>
       <aside id="sidebar">
         <div id="list"></div>
       </aside>
@@ -653,7 +654,15 @@
         sidebarCollapsed = !sidebarCollapsed;
         sidebarEl.classList.toggle("collapsed", sidebarCollapsed);
         sidebarToggleBtn.classList.toggle("collapsed", sidebarCollapsed);
-        sidebarToggleBtn.textContent = sidebarCollapsed ? "›" : "‹";
+        sidebarToggleBtn.textContent = sidebarCollapsed ? "‹" : "›";
+
+        // ===== 카카오맵은 컨테이너 크기가 바뀌어도 스스로 다시 안 그림 =====
+        // 사이드바 너비 변하는 애니메이션(0.25s)이 끝난 뒤 지도 크기를 다시 계산시킴
+        setTimeout(function () {
+          if (map) {
+            map.relayout();
+          }
+        }, 300);
       });
 
       // ===== 상세정보 큰 팝업창 열기/닫기 =====
