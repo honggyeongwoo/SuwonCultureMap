@@ -60,11 +60,16 @@
         background: #555;
         color: #fff;
       }
+      .login-btn.login {
+        background: #4a90d9;
+        color: #fff;
+      }
 
       #app {
         display: flex;
         flex: 1;
         min-height: 0;
+        position: relative; /* 토글 버튼 절대 위치 기준점 */
       }
       #map {
         flex: 1;
@@ -77,6 +82,37 @@
         flex-direction: column;
         border-left: 1px solid #ddd;
         background: #fff;
+        overflow: hidden;
+        transition: width 0.25s ease;
+      }
+      #sidebar.collapsed {
+        width: 0;
+        border-left: none;
+      }
+
+      /* ===== 사이드바 접기/펼치기 토글 버튼 (네이버지도 스타일) ===== */
+      #sidebarToggleBtn {
+        position: absolute;
+        top: 50%;
+        right: 450px;
+        transform: translate(50%, -50%);
+        width: 28px;
+        height: 48px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        font-size: 0.9rem;
+        z-index: 10;
+        transition: right 0.25s ease, transform 0.25s ease;
+      }
+      #sidebarToggleBtn.collapsed {
+        right: 8px; /* 접혔을 때는 화면 밖으로 안 밀려나가게 오른쪽에 여백만 두고 붙임 */
+        transform: translateY(-50%); /* 접힘 상태에선 절반을 화면 밖으로 미는 translateX 제거 */
       }
       #list {
         flex: 1;
@@ -261,25 +297,12 @@
         <option value="all">전체 카테고리</option>
       </select>
       <input type="text" id="searchInput" placeholder="행사 이름 검색" />
+      <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+        <input type="checkbox" id="showPastCheckbox" />
+        지난 행사 보기
+      </label>
       <span id="authStatus">로그인 확인 중...</span>
-      <a
-        id="kakaoLoginBtn"
-        class="login-btn kakao"
-        href="https://kauth.kakao.com/oauth/authorize?client_id=e9da4327b7be240f13ddd639379fe1fc&redirect_uri=http://localhost:8080/api/auth/kakao/callback&response_type=code"
-        >카카오 로그인</a
-      >
-      <a
-        id="googleLoginBtn"
-        class="login-btn google"
-        href="https://accounts.google.com/o/oauth2/v2/auth?client_id=440681864198-k826a7epdj47stfnp7omhufp6rm7dbg7.apps.googleusercontent.com&redirect_uri=http://localhost:8080/api/auth/google/callback&response_type=code&scope=email%20profile"
-        >구글 로그인</a
-      >
-      <a
-        id="naverLoginBtn"
-        class="login-btn naver"
-        href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=Q7X7EYInh1P5DiiyuSy0&redirect_uri=http://localhost:8080/api/auth/naver/callback&state=test123"
-        >네이버 로그인</a
-      >
+      <a id="loginPageBtn" class="login-btn login" href="login.html">로그인</a>
       <button id="syncBtn" class="login-btn sync">행사 동기화</button>
       <button id="logoutBtn" class="login-btn logout" style="display: none">
         로그아웃
@@ -288,6 +311,7 @@
 
     <div id="app">
       <div id="map"></div>
+      <button id="sidebarToggleBtn">›</button>
       <aside id="sidebar">
         <div id="list"></div>
       </aside>
@@ -423,10 +447,18 @@
         });
       }
 
-      // ===== 필터링 (검색어 + 카테고리, '찜'은 즐겨찾기 목록으로 필터) =====
+      // ===== 지난 행사 판별 (endDate가 오늘보다 이전이면 지난 행사) =====
+      function isPastEvent(event) {
+        if (!event.endDate) return false; // 종료일 정보 없으면 지난 행사로 취급 안 함
+        var today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+        return event.endDate < today;
+      }
+
+      // ===== 필터링 (검색어 + 카테고리 + 지난 행사 여부, '찜'은 즐겨찾기 목록으로 필터) =====
       function filterMarkers() {
         var keyword = document.getElementById("searchInput").value.trim();
         var selectedCategory = document.getElementById("categorySelect").value;
+        var showPast = document.getElementById("showPastCheckbox").checked;
 
         if (currentInfowindow) {
           currentInfowindow.close();
@@ -447,7 +479,9 @@
             matchesCategory = item.event.category === selectedCategory;
           }
 
-          var visible = matchesKeyword && matchesCategory;
+          var matchesPast = showPast || !isPastEvent(item.event);
+
+          var visible = matchesKeyword && matchesCategory && matchesPast;
 
           item.marker.setMap(visible ? map : null);
 
@@ -551,6 +585,9 @@
       document
         .getElementById("categorySelect")
         .addEventListener("change", filterMarkers);
+      document
+        .getElementById("showPastCheckbox")
+        .addEventListener("change", filterMarkers);
 
       document.getElementById("syncBtn").addEventListener("click", function () {
         fetch("/api/events/sync", { method: "POST" })
@@ -572,24 +609,18 @@
             isLoggedIn = data.loggedIn;
 
             var status = document.getElementById("authStatus");
-            var kakaoBtn = document.getElementById("kakaoLoginBtn");
-            var googleBtn = document.getElementById("googleLoginBtn");
-            var naverBtn = document.getElementById("naverLoginBtn");
+            var loginPageBtn = document.getElementById("loginPageBtn");
             var logoutBtn = document.getElementById("logoutBtn");
 
             if (isLoggedIn) {
               status.textContent =
                 "로그인됨 (회원 번호: " + data.memberId + ")";
-              kakaoBtn.style.display = "none";
-              googleBtn.style.display = "none";
-              naverBtn.style.display = "none";
+              loginPageBtn.style.display = "none";
               logoutBtn.style.display = "inline-block";
               return fetch("/api/favorites").then((r) => r.json()); // 로그인 상태면 즐겨찾기 목록도 받아옴
             } else {
               status.textContent = "로그인 안 됨";
-              kakaoBtn.style.display = "inline-block";
-              googleBtn.style.display = "inline-block";
-              naverBtn.style.display = "inline-block";
+              loginPageBtn.style.display = "inline-block";
               logoutBtn.style.display = "none";
               return [];
             }
@@ -613,6 +644,26 @@
         });
 
       checkAuth();
+
+      // ===== 사이드바 접기/펼치기 토글 =====
+      var sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+      var sidebarEl = document.getElementById("sidebar");
+      var sidebarCollapsed = false;
+
+      sidebarToggleBtn.addEventListener("click", function () {
+        sidebarCollapsed = !sidebarCollapsed;
+        sidebarEl.classList.toggle("collapsed", sidebarCollapsed);
+        sidebarToggleBtn.classList.toggle("collapsed", sidebarCollapsed);
+        sidebarToggleBtn.textContent = sidebarCollapsed ? "‹" : "›";
+
+        // ===== 카카오맵은 컨테이너 크기가 바뀌어도 스스로 다시 안 그림 =====
+        // 사이드바 너비 변하는 애니메이션(0.25s)이 끝난 뒤 지도 크기를 다시 계산시킴
+        setTimeout(function () {
+          if (map) {
+            map.relayout();
+          }
+        }, 300);
+      });
 
       // ===== 상세정보 큰 팝업창 열기/닫기 =====
       function openDetailModal(event) {
