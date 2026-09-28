@@ -364,6 +364,105 @@
         return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
       }
 
+      // ===== 같은 좌표에 행사가 여러 개일 때 쓰는 "개수 뱃지" 마커 아이콘 =====
+      function createClusterMarkerIcon(count) {
+        var svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">' +
+          '<circle cx="18" cy="20" r="16" fill="#34495E" stroke="#fff" stroke-width="2"/>' +
+          '<text x="18" y="26" font-size="15" text-anchor="middle">📍</text>' +
+          '<circle cx="31" cy="9" r="9" fill="#E74C3C" stroke="#fff" stroke-width="2"/>' +
+          '<text x="31" y="13" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle">' +
+          count +
+          "</text>" +
+          "</svg>";
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+      }
+
+      // ===== 이벤트 배열을 좌표(위치)별로 묶기 =====
+      function groupByLocation(items) {
+        var groups = {};
+        var order = [];
+        items.forEach(function (item) {
+          var key = item.event.latitude + "," + item.event.longitude;
+          if (!groups[key]) {
+            groups[key] = [];
+            order.push(key);
+          }
+          groups[key].push(item);
+        });
+        return order.map(function (key) {
+          return groups[key];
+        });
+      }
+
+      // ===== 현재 지도에 떠 있는 "장소별 마커"들 (필터 바뀔 때마다 새로 그림) =====
+      var locationMarkers = [];
+
+      function renderLocationMarkers(visibleItems) {
+        locationMarkers.forEach(function (lm) {
+          lm.marker.setMap(null);
+        });
+        locationMarkers = [];
+
+        groupByLocation(visibleItems).forEach(function (group) {
+          var first = group[0].event;
+          var position = new kakao.maps.LatLng(first.latitude, first.longitude);
+
+          var markerImage =
+            group.length === 1
+              ? new kakao.maps.MarkerImage(
+                  createMarkerIcon(first.category),
+                  new kakao.maps.Size(36, 36),
+                )
+              : new kakao.maps.MarkerImage(
+                  createClusterMarkerIcon(group.length),
+                  new kakao.maps.Size(40, 40),
+                );
+
+          var marker = new kakao.maps.Marker({
+            position: position,
+            image: markerImage,
+          });
+          marker.setMap(map);
+
+          var infowindowContent;
+          if (group.length === 1) {
+            infowindowContent =
+              '<div style="padding:6px 8px; cursor:pointer; color:#2f6f6b; text-decoration:underline; font-size:0.85rem; width:260px; white-space:normal; word-break:break-word; text-align:center;" onclick="openDetailFromMarker(' +
+              first.id +
+              ')">' +
+              first.title +
+              "</div>";
+          } else {
+            var rows = group
+              .map(function (item) {
+                return (
+                  '<div onclick="openDetailFromMarker(' +
+                  item.event.id +
+                  ')" style="padding:8px 6px; border-top:1px solid #eee; cursor:pointer; font-size:0.85rem; color:#2f6f6b;">' +
+                  item.event.title +
+                  "</div>"
+                );
+              })
+              .join("");
+            infowindowContent =
+              '<div style="width:230px; max-height:220px; overflow-y:auto;">' +
+              '<div style="padding:6px 8px 2px; font-size:0.75rem; color:#888;">이 위치의 행사 ' +
+              group.length +
+              "개</div>" +
+              rows +
+              "</div>";
+          }
+
+          var infowindow = new kakao.maps.InfoWindow({ content: infowindowContent });
+          kakao.maps.event.addListener(marker, "click", function () {
+            toggleInfowindow(infowindow, marker);
+          });
+
+          locationMarkers.push({ marker: marker, infowindow: infowindow });
+        });
+      }
+
       kakao.maps.load(function () {
         var mapContainer = document.getElementById("map");
         var mapOption = {
@@ -377,40 +476,10 @@
           .then((events) => {
             setupCategoryOptions(events);
 
+            // 이 시점엔 마커를 만들지 않음. 실제 마커는 filterMarkers() -> renderLocationMarkers()에서
+            // "장소별로 묶어서" 그림 (같은 좌표에 행사가 여러 개면 개수 뱃지 마커로)
             events.forEach(function (event) {
-              var markerPosition = new kakao.maps.LatLng(
-                event.latitude,
-                event.longitude,
-              );
-
-              var markerImage = new kakao.maps.MarkerImage(
-                createMarkerIcon(event.category),
-                new kakao.maps.Size(36, 36),
-              );
-              var marker = new kakao.maps.Marker({
-                position: markerPosition,
-                image: markerImage,
-              });
-
-              marker.setMap(map);
-
-              var infowindow = new kakao.maps.InfoWindow({
-                content:
-                  '<div style="padding:6px 8px; cursor:pointer; color:#2f6f6b; text-decoration:underline; font-size:0.85rem; width:260px; white-space:normal; word-break:break-word; text-align:center;" onclick="openDetailFromMarker(' +
-                  event.id +
-                  ')">' +
-                  event.title +
-                  "</div>",
-              });
-              kakao.maps.event.addListener(marker, "click", function () {
-                toggleInfowindow(infowindow, marker);
-              });
-
-              markerList.push({
-                marker: marker,
-                event: event,
-                infowindow: infowindow,
-              });
+              markerList.push({ event: event });
             });
 
             filterMarkers();
@@ -484,13 +553,12 @@
 
           var visible = matchesKeyword && matchesCategory && matchesPast;
 
-          item.marker.setMap(visible ? map : null);
-
           if (visible) {
             visibleItems.push(item);
           }
         });
 
+        renderLocationMarkers(visibleItems); // 장소별로 묶어서 마커 다시 그리기
         renderSidebar(visibleItems);
       }
 
@@ -571,7 +639,9 @@
             "</div>";
 
           div.addEventListener("click", function () {
-            map.setCenter(item.marker.getPosition());
+            map.setCenter(
+              new kakao.maps.LatLng(item.event.latitude, item.event.longitude),
+            );
             map.setLevel(5);
             openDetailModal(item.event);
           });
