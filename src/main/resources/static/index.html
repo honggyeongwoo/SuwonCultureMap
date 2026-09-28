@@ -480,11 +480,8 @@
 
             var rows = sorted
               .map(function (item, i) {
-                // 헤더 바로 아래 첫 줄은 항상 흰색으로 고정 (파란 헤더랑 회색이 바로 안 붙게).
-                // 그 아래부터 맨 아래쪽 기준으로 2번째, 4번째... 줄마다 회색 줄무늬
-                var posFromBottom = sorted.length - i;
-                var stripeStyle =
-                  i > 0 && posFromBottom % 2 === 0 ? "background:#f2f2f2;" : "";
+                // 위에서부터 순서대로 흰색/회색 번갈아 표시 (첫 줄은 항상 흰색이라 헤더랑 안 붙음)
+                var stripeStyle = i % 2 === 1 ? "background:#f2f2f2;" : "";
                 return (
                   '<div onclick="openDetailFromMarker(' +
                   item.event.id +
