@@ -456,7 +456,7 @@
             infowindowContent =
               '<div style="width:260px;">' +
               (singlePlaceName
-                ? '<div style="padding:6px 8px 2px; font-size:0.8rem; font-weight:700; color:#333; text-align:center;">' +
+                ? '<div style="padding:8px 10px; font-size:0.8rem; font-weight:700; color:#1f4e79; background:#e8f0fa; border-bottom:1px solid #cddcee; text-align:center;">' +
                   singlePlaceName +
                   "</div>"
                 : "") +
@@ -480,10 +480,11 @@
 
             var rows = sorted
               .map(function (item, i) {
-                // 아래쪽(마지막 줄) 기준으로 2번째, 4번째... 줄마다 살짝 회색 배경 (시인성)
+                // 헤더 바로 아래 첫 줄은 항상 흰색으로 고정 (파란 헤더랑 회색이 바로 안 붙게).
+                // 그 아래부터 맨 아래쪽 기준으로 2번째, 4번째... 줄마다 회색 줄무늬
                 var posFromBottom = sorted.length - i;
                 var stripeStyle =
-                  posFromBottom % 2 === 0 ? "background:#f2f2f2;" : "";
+                  i > 0 && posFromBottom % 2 === 0 ? "background:#f2f2f2;" : "";
                 return (
                   '<div onclick="openDetailFromMarker(' +
                   item.event.id +
@@ -498,7 +499,7 @@
             var placeName = extractPlaceName(first.info) || first.title;
             infowindowContent =
               '<div style="width:230px; max-height:220px; overflow-y:auto;">' +
-              '<div style="padding:6px 8px 2px; font-size:0.8rem; font-weight:700; color:#333;">' +
+              '<div style="padding:8px 10px; font-size:0.8rem; font-weight:700; color:#1f4e79; background:#e8f0fa; border-bottom:1px solid #cddcee;">' +
               placeName +
               "</div>" +
               rows +
