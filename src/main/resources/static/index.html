@@ -303,6 +303,7 @@
       </label>
       <span id="authStatus">로그인 확인 중...</span>
       <a id="loginPageBtn" class="login-btn login" href="login.html">로그인</a>
+      <a id="mypageBtn" class="login-btn login" href="mypage.html" style="display: none">마이페이지</a>
       <button id="syncBtn" class="login-btn sync">행사 동기화</button>
       <button id="logoutBtn" class="login-btn logout" style="display: none">
         로그아웃
@@ -610,17 +611,20 @@
 
             var status = document.getElementById("authStatus");
             var loginPageBtn = document.getElementById("loginPageBtn");
+            var mypageBtn = document.getElementById("mypageBtn");
             var logoutBtn = document.getElementById("logoutBtn");
 
             if (isLoggedIn) {
               status.textContent =
                 "로그인됨 (회원 번호: " + data.memberId + ")";
               loginPageBtn.style.display = "none";
+              mypageBtn.style.display = "inline-block";
               logoutBtn.style.display = "inline-block";
               return fetch("/api/favorites").then((r) => r.json()); // 로그인 상태면 즐겨찾기 목록도 받아옴
             } else {
               status.textContent = "로그인 안 됨";
               loginPageBtn.style.display = "inline-block";
+              mypageBtn.style.display = "none";
               logoutBtn.style.display = "none";
               return [];
             }
