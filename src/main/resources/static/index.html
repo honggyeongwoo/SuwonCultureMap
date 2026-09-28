@@ -379,18 +379,28 @@
       }
 
       // ===== info 텍스트에서 "장소" 값만 뽑기 (목록 팝업 제목용) =====
+      // 라벨이 "장소" 하나로만 안 오고 "행사장소", "공연장소" 등으로도 와서
+      // 포함 여부로 찾음. "장소" 계열이 아예 없으면 "주소/소재지"로 대체
       function extractPlaceName(infoText) {
         if (!infoText) return null;
         var lines = infoText.split("\n");
+        var addressFallback = null;
+
         for (var i = 0; i < lines.length; i++) {
           var idx = lines[i].indexOf(":");
           if (idx === -1) continue;
           var label = lines[i].substring(0, idx).trim();
-          if (label === "장소") {
-            return lines[i].substring(idx + 1).trim();
+          var value = lines[i].substring(idx + 1).trim();
+
+          if (label.indexOf("장소") !== -1) {
+            return value;
+          }
+          if (!addressFallback && label.indexOf("주소") !== -1) {
+            addressFallback = value;
           }
         }
-        return null;
+
+        return addressFallback;
       }
 
       // ===== 이벤트 배열을 좌표(위치)별로 묶기 =====
