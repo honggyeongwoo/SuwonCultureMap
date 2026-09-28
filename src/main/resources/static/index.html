@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <title>수원 문화 프로그램 지도</title>
     <style>
+      :root {
+        --sidebar-width: 450px; /* 모바일 미디어쿼리에서 100vw로 덮어씀 */
+      }
+
       body {
         margin: 0;
         font-family: sans-serif;
@@ -76,7 +80,7 @@
       }
 
       #sidebar {
-        width: 450px;
+        width: var(--sidebar-width);
         flex: none;
         display: flex;
         flex-direction: column;
@@ -94,7 +98,7 @@
       #sidebarToggleBtn {
         position: absolute;
         top: 50%;
-        right: 450px;
+        right: var(--sidebar-width);
         transform: translate(50%, -50%);
         width: 28px;
         height: 48px;
@@ -288,6 +292,32 @@
         max-width: 400px;
         white-space: normal;
         word-break: break-word;
+      }
+
+      /* ===== 모바일 대응 (2단계: 모바일 / 데스크톱) ===== */
+      @media (max-width: 768px) {
+        :root {
+          --sidebar-width: 100vw;
+        }
+
+        #topbar {
+          font-size: 0.78rem;
+          padding: 6px 10px;
+          gap: 6px;
+        }
+
+        /* 사이드바가 지도를 밀어내지 않고, 지도 위에 덮어씌워지는 오버레이로 동작 */
+        #sidebar {
+          position: absolute;
+          top: 0;
+          right: 0;
+          height: 100%;
+          box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-image {
+          height: 160px;
+        }
       }
     </style>
   </head>
@@ -785,7 +815,11 @@
       // ===== 사이드바 접기/펼치기 토글 =====
       var sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
       var sidebarEl = document.getElementById("sidebar");
-      var sidebarCollapsed = false;
+      // 모바일 화면(768px 이하)에서는 사이드바가 지도를 전부 가려버리니 처음엔 접어둠
+      var sidebarCollapsed = window.innerWidth <= 768;
+      sidebarEl.classList.toggle("collapsed", sidebarCollapsed);
+      sidebarToggleBtn.classList.toggle("collapsed", sidebarCollapsed);
+      sidebarToggleBtn.textContent = sidebarCollapsed ? "‹" : "›";
 
       sidebarToggleBtn.addEventListener("click", function () {
         sidebarCollapsed = !sidebarCollapsed;
