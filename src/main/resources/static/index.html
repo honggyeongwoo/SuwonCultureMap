@@ -378,6 +378,21 @@
         return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
       }
 
+      // ===== info 텍스트에서 "장소" 값만 뽑기 (목록 팝업 제목용) =====
+      function extractPlaceName(infoText) {
+        if (!infoText) return null;
+        var lines = infoText.split("\n");
+        for (var i = 0; i < lines.length; i++) {
+          var idx = lines[i].indexOf(":");
+          if (idx === -1) continue;
+          var label = lines[i].substring(0, idx).trim();
+          if (label === "장소") {
+            return lines[i].substring(idx + 1).trim();
+          }
+        }
+        return null;
+      }
+
       // ===== 이벤트 배열을 좌표(위치)별로 묶기 =====
       function groupByLocation(items) {
         var groups = {};
@@ -462,11 +477,12 @@
                 );
               })
               .join("");
+            var placeName = extractPlaceName(first.info) || first.title;
             infowindowContent =
               '<div style="width:230px; max-height:220px; overflow-y:auto;">' +
-              '<div style="padding:6px 8px 2px; font-size:0.75rem; color:#888;">이 위치의 행사 ' +
-              group.length +
-              "개</div>" +
+              '<div style="padding:6px 8px 2px; font-size:0.8rem; font-weight:700; color:#333;">' +
+              placeName +
+              "</div>" +
               rows +
               "</div>";
           }
