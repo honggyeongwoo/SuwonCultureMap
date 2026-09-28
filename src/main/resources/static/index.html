@@ -442,11 +442,19 @@
 
           var infowindowContent;
           if (group.length === 1) {
+            var singlePlaceName = extractPlaceName(first.info);
             infowindowContent =
-              '<div style="padding:6px 8px; cursor:pointer; color:#2f6f6b; text-decoration:underline; font-size:0.85rem; width:260px; white-space:normal; word-break:break-word; text-align:center;" onclick="openDetailFromMarker(' +
+              '<div style="width:260px;">' +
+              (singlePlaceName
+                ? '<div style="padding:6px 8px 2px; font-size:0.8rem; font-weight:700; color:#333; text-align:center;">' +
+                  singlePlaceName +
+                  "</div>"
+                : "") +
+              '<div style="padding:4px 8px 8px; cursor:pointer; color:#2f6f6b; text-decoration:underline; font-size:0.85rem; white-space:normal; word-break:break-word; text-align:center;" onclick="openDetailFromMarker(' +
               first.id +
               ')">' +
               first.title +
+              "</div>" +
               "</div>";
           } else {
             // 공연일(startDate) 빠른 순으로 정렬하되, 제일 빠른 게 목록 맨 아래(스택 아래쪽)에 오도록 뒤집음
