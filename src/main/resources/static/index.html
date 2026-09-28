@@ -499,7 +499,7 @@
             var placeName = extractPlaceName(first.info) || first.title;
             infowindowContent =
               '<div style="width:230px; max-height:220px; overflow-y:auto;">' +
-              '<div style="padding:8px 10px; font-size:0.8rem; font-weight:700; color:#1f4e79; background:#e8f0fa; border-bottom:1px solid #cddcee;">' +
+              '<div style="padding:8px 10px; font-size:0.8rem; font-weight:700; color:#1f4e79; background:#e8f0fa; border-bottom:1px solid #cddcee; text-align:center;">' +
               placeName +
               "</div>" +
               rows +
@@ -849,10 +849,14 @@
         document.getElementById("detailModal").style.display = "none";
       }
 
-      // ===== ESC 키로 상세 모달 닫기 =====
+      // ===== ESC 키로 상세 모달 + 마커 팝업(InfoWindow) 닫기 =====
       document.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
           closeDetailModal();
+          if (currentInfowindow) {
+            currentInfowindow.close();
+            currentInfowindow = null;
+          }
         }
       });
 
